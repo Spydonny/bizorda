@@ -1,8 +1,10 @@
+import 'package:bizorda/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart'; // Убедись, что у тебя подключён go_router
+import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Убедись, что у тебя подключён go_router
 
 class NavigationContainer extends StatefulWidget {
   const NavigationContainer({
@@ -19,17 +21,31 @@ class NavigationContainer extends StatefulWidget {
 }
 
 class _NavigationContainerState extends State<NavigationContainer> {
+  late SharedPreferences _prefs;
+
+  @override
+  void initState() {
+    init();
+    super.initState();
+  }
+
+  Future<void> init() async {
+    _prefs = await SharedPreferences.getInstance();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
       width: 130,
       padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.secondaryContainer,
+        color: AppColors.appBar,
         borderRadius: const BorderRadius.all(Radius.circular(4)),
       ),
       child: Column(
-        children: List.generate(6, (int idx) {
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ...List.generate(6, (int idx) {
           final List<IconData> icons = [
             Icons.home_outlined,
             Icons.person_outline,
@@ -57,6 +73,13 @@ class _NavigationContainerState extends State<NavigationContainer> {
           final isChosen = idx == widget.chosenIdx;
           return _buildListTile(context, icons[idx], titles[idx], routes[idx], isChosen);
         }),
+          ElevatedButton(onPressed: () {
+            setState(() {
+              _prefs.remove('access_token');
+              context.go('/login');
+            });
+          }, child: Text('Выйти'))
+      ]
       ),
     );
   }
@@ -65,7 +88,7 @@ class _NavigationContainerState extends State<NavigationContainer> {
     final theme = Theme.of(context);
     return Container(
       width: 130,
-      color: isChosen ? theme.colorScheme.onPrimary : theme.colorScheme.secondaryContainer,
+      color: isChosen ? Colors.white24 : Colors.transparent,
       child: ListTile(
         leading: Icon(
           icon,
