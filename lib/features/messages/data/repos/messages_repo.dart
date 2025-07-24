@@ -116,7 +116,7 @@ class MessagesRepo {
     required String roomId,
     required String messageId,
   }) async {
-    final uri = Uri.parse('$baseUrl/messages/$roomId/$messageId');
+    final uri = Uri.parse('$baseUrl/$roomId/$messageId/read');
     final response = await http.put(
       uri,
       headers: {
@@ -125,8 +125,9 @@ class MessagesRepo {
       },
     );
 
+
     if (response.statusCode != 200) {
-      throw Exception('Failed to mark message as read');
+      throw Exception('Failed to mark message as read ${response.statusCode}');
     }
   }
 

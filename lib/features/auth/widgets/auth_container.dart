@@ -14,7 +14,7 @@ class AuthContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Container(
-        width: 360,
+        width: 380,
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
           color: Colors.grey[900],

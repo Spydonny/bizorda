@@ -1,7 +1,7 @@
-import 'package:bizorda/features/profile/widgets/label_local.dart';
+import 'package:bizorda/features/profile/widgets/company/label_local.dart';
 import 'package:flutter/material.dart';
-import '../../../theme.dart';
-import '../../feed/data/models/post.dart';
+import '../../../../theme.dart';
+import '../../../feed/data/models/post.dart';
 
 class PostsList extends StatelessWidget {
   const PostsList({super.key, required this.posts, this.onAdd});
@@ -23,10 +23,10 @@ class PostsList extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               LabelLocal('Мои посты'),
-              IconButton(
+              onAdd != null ? IconButton(
                 icon: const Icon(Icons.add, size: 30),
                 onPressed: onAdd,
-              ),
+              ) : SizedBox.shrink(),
             ],
           ),
           const SizedBox(height: 12),

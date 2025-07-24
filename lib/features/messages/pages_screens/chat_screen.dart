@@ -1,7 +1,8 @@
 import 'package:bizorda/gen/assets.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:talker/talker.dart';
 
 import '../../../../theme.dart';
 import '../data/models/message.dart';
@@ -10,13 +11,15 @@ import '../data/repos/messages_repo.dart';
 
 
 class ChatScreen extends StatefulWidget {
+  final String token;
   final String roomId;
-  final String currentUserId; // <-- You must pass this
+  final String currentUserId;
+  final String name;
 
   const ChatScreen({
     super.key,
     required this.roomId,
-    required this.currentUserId,
+    required this.currentUserId, required this.token, required this.name,
   });
 
   @override
@@ -25,6 +28,8 @@ class ChatScreen extends StatefulWidget {
 
 
 class _ChatScreenState extends State<ChatScreen> {
+  final talker = Talker();
+
   final List<Message> _messages = [];
   final TextEditingController _controller = TextEditingController();
   final ImagePicker _picker = ImagePicker();
@@ -40,9 +45,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> _loadMessages() async {
-    final shared = await SharedPreferences.getInstance();
-    final token = shared.getString('access_token');
-    _repo = MessagesRepo(token: token ?? '');
+    _repo = MessagesRepo(token: widget.token);
 
     try {
       final messages = await _repo.getMessages(widget.roomId);
@@ -64,8 +67,8 @@ class _ChatScreenState extends State<ChatScreen> {
                 _messages[idx] = _messages[idx].copyWith(status: 'read');
               }
             });
-          } catch (_) {
-            // You might log this or silently ignore it
+          } catch (e) {
+            talker.error(e);
           }
         }
       }
@@ -110,8 +113,10 @@ class _ChatScreenState extends State<ChatScreen> {
     } catch (_) {
       setState(() {
         final idx = _messages.indexWhere((m) => m.id == tempMessage.id);
-        if (idx != -1) _messages[idx] =
+        if (idx != -1) {
+          _messages[idx] =
             tempMessage.copyWith(status: 'failed');
+        }
       });
     }
   }
@@ -162,7 +167,9 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Чат')),
+      appBar: AppBar(
+          title: Text(widget.name)
+      ),
       body: Column(
         children: [
           Expanded(

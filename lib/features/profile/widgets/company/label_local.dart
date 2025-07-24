@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../theme.dart';
+import '../../../../theme.dart';
 
 class LabelLocal extends StatelessWidget {
   const LabelLocal(this.text ,{super.key});

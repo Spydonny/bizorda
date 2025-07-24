@@ -1,8 +1,11 @@
 import 'package:bizorda/features/auth/data/repos/auth_repo.dart';
+import 'package:bizorda/features/main/main_page.dart';
+import 'package:bizorda/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:talker/talker.dart';
+import '../../../token_notifier.dart';
 import '../widgets/widgets.dart';
 
 class LoginPage extends StatefulWidget {
@@ -80,10 +83,11 @@ class _LoginPageState extends State<LoginPage> {
       }
       Talker().debug(token);
       shared.setString('access_token', token);
-      await Future.delayed(Duration(seconds: 30));
+      await Future.delayed(Duration(seconds: 2));
       if (!context.mounted) return;
+      tokenNotifier.value = token;
       context.go('/');
-      context.go('/');
+      // context.go('/');
     }
   }
 

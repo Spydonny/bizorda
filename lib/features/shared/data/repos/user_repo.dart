@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../models/user.dart'; // Подключи свою модель UserOut и UserUpdate
+import '../models/user.dart';
 
 class UsersRepo {
   final String baseUrl = 'https://enterra-api.onrender.com';
@@ -71,5 +71,20 @@ class UsersRepo {
     if (response.statusCode != 200) {
       throw Exception('Failed to delete user');
     }
+  }
+
+  Future<List<User>> searchUser(String part) async {
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/users/search/').replace(
+        queryParameters: {'part': part},
+      ),
+      headers: _headers,
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Failed to search users ${response.statusCode} ${response.body}');
+    }
+    final List<dynamic> data = jsonDecode(response.body);
+    return data.map((e) => User.fromJson(e)).toList();
   }
 }

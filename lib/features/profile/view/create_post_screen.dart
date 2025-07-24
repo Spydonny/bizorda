@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:bizorda/features/feed/data/repos/post_repo.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
 class CreatePostScreen extends StatefulWidget {
@@ -30,9 +31,11 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     }
   }
 
-  void createPost() async {
+  void createPost(BuildContext context) async {
     final content = contentController.text;
-     await postRepository.createPost(content, imageFile: selectedImage);
+    await postRepository.createPost(content, imageFile: selectedImage);
+    if (!context.mounted) return;
+    context.go('/profile');
   }
 
   @override
@@ -44,6 +47,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      ),
       body: Center(
         child: Container(
           width: 360,
@@ -80,7 +86,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                         ),
                       ],
                     ),
-                  ),
+                  )
                 ],
               ),
               const SizedBox(height: 20),
@@ -138,7 +144,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                   ),
                   const SizedBox(width: 12),
                   ElevatedButton(
-                    onPressed: createPost,
+                    onPressed: () {
+                      createPost(context);
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue[600],
                       padding: const EdgeInsets.symmetric(

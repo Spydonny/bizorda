@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../theme.dart';
+import '../../../../theme.dart';
 
 class ReviewsList extends StatelessWidget {
   const ReviewsList({super.key});

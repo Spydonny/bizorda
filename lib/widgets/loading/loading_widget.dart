@@ -8,20 +8,13 @@ class LoadingWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            NavigationButton(chosenIdx: 0, isLoading: true),
-            Text(title),
-            SizedBox(width: 25,)
-          ],
-        ),
-      ),
-      body: Center(
+    return Container(
+      width: MediaQuery.sizeOf(context).width,
+      height: MediaQuery.sizeOf(context).height,
+      color: Colors.black,
+      child: Center(
         child: CircularProgressIndicator(),
-      ),
+    )
     );
   }
 }

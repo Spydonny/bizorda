@@ -3,15 +3,12 @@ import 'package:google_fonts/google_fonts.dart';
 /// Основные цвета для темы
 class AppColors {
   static const Color background = Color.fromRGBO(12,12,12,1);
-  static const Color appBar = Color.fromRGBO(78, 78, 78, 0.47);
+  static const Color appBar = Color.fromRGBO(16, 16, 16, 0.69);
   static const Color primary = Color.fromRGBO(0, 38, 255, 1.0);
   static const Color primaryContainer = Color.fromRGBO(78, 78, 78, 0.23);
   static const Color secondaryContainer = Color.fromRGBO(78, 78, 78, 0.24);
-
-  //rgba(56, 63, 98, 0.47)
   static const Color bubbleMe = Color.fromRGBO(0, 9, 255, 0.23);
   static const Color bubbleOther = Color.fromRGBO(89, 90, 120, 0.23);
-  //rgba(89, 90, 120, 0.23)
   static const Color inputBackground = Color.fromRGBO(93, 93, 93, 0.47);
   static const Color linkColor = Color.fromRGBO(0, 122, 255, 0.85);
 

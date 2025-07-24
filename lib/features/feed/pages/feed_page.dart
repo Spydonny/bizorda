@@ -1,14 +1,14 @@
 import 'package:bizorda/features/feed/widgets/post_item.dart';
 import 'package:bizorda/widgets/navigation_widgets/navigation_button.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:talker/talker.dart';
 
 import '../data/models/post.dart';
 import '../data/repos/post_repo.dart';
 
 class FeedPage extends StatefulWidget {
-  const FeedPage({super.key});
+  const FeedPage({super.key, required this.token});
+  final String token;
 
   @override
   State<FeedPage> createState() => _FeedPageState();
@@ -17,8 +17,13 @@ class FeedPage extends StatefulWidget {
 class _FeedPageState extends State<FeedPage> {
   final talker = Talker();
 
-  late Future<List<Post>> _futurePosts;
+  final TextEditingController searchController = TextEditingController();
+
+  List<Post> _posts = [];
+  List<Post> _allPosts = [];
   late final PostRepository postRepository;
+  bool _isLoading = true;
+  bool _hasError = false;
 
   @override
   void initState() {
@@ -27,18 +32,40 @@ class _FeedPageState extends State<FeedPage> {
   }
 
   Future<void> _initialize() async {
-    final shared = await SharedPreferences.getInstance();
-    final token = shared.getString('access_token') ?? '';
-    postRepository = PostRepository(token: token);
+    postRepository = PostRepository(token: widget.token);
+    try {
+      final posts = await postRepository.getAllPosts();
+      setState(() {
+        _allPosts = posts;
+        _posts = posts;
+        _isLoading = false;
+      });
+    } catch (e, st) {
+      talker.error('Ошибка при загрузке постов: $e', st);
+      setState(() {
+        _isLoading = false;
+        _hasError = true;
+      });
+    }
+  }
+
+  void _onSearchChanged(String query) {
+    final lowerQuery = query.toLowerCase();
+
+    final filtered = _allPosts.where((post) {
+      return post.content.toLowerCase().contains(lowerQuery) ||
+          post.senderName.toLowerCase().contains(lowerQuery) ||
+          post.companyName.toLowerCase().contains(lowerQuery);
+    }).toList();
+
     setState(() {
-      _futurePosts = postRepository.getAllPosts();
+      _posts = filtered;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final TextEditingController searchController = TextEditingController();
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -57,34 +84,32 @@ class _FeedPageState extends State<FeedPage> {
             border: theme.inputDecorationTheme.border,
             prefixIcon: Icon(Icons.search, color: theme.iconTheme.color),
           ),
-          onChanged: (String str) {
-
-          },
+          onChanged: _onSearchChanged,
         ),
       ),
-      body: FutureBuilder<List<Post>>(
-        future: _futurePosts,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            talker.error(snapshot.error);
-            return Center(child: Text('Ошибка в системе'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('Нет постов'));
-          }
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _hasError
+          ? const Center(child: Text('Ошибка в системе'))
+          : _posts.isEmpty
+          ? const Center(child: Text('Нет постов'))
+          : ListView.builder(
+        padding: const EdgeInsets.all(12),
+        itemCount: _posts.length,
+        itemBuilder: (context, index) => PostItem(
+          item: _posts[index],
+          onLike: (postId) => postRepository.likePost(postId),
 
-          final posts = snapshot.data!;
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(12),
-            itemCount: posts.length,
-            itemBuilder: (context, index) => PostItem(item: posts[index],
-              onLike: (postId) => postRepository.likePost(postId),),
-          );
-        },
+        ),
       ),
     );
   }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
 }
+
 

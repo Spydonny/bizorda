@@ -23,31 +23,47 @@ class _CompanyRegisterPageState extends State<CompanyRegisterPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _sphereController = TextEditingController();
 
+  // Новые поля состояния
+  String _role = 'Инвестор'; // или 'Стартап'
+  String? _registrationType; // например, 'ООО', 'ИП'
+
+  // Список вариантов для ComboBox
+  final List<String> _registrationTypes = [
+    'ООО',
+    'ИП',
+    'ТОО',
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: AuthContainer(
-          title: 'Данные компании',
-          child: Form(
-            key: _formKey,
-            child: Column(
-              children: [
-                ..._buildTextFields(),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () => context.go('/login'),
-                    child: const Text('У вас уже есть аккаунт?'),
-                  ),
+        title: 'Данные компании',
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              ..._buildTextFields(),
+              const SizedBox(height: 8),
+              _buildRegistrationTypeCombo(),
+              const SizedBox(height: 16),
+              _buildRoleRadios('Стартап','Инвестор'),
+              _buildRoleRadios('Исполнитель','Подрядчик'),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () => context.go('/login'),
+                  child: const Text('У вас уже есть аккаунт?'),
                 ),
-                const SizedBox(height: 12),
-                AuthButton(
-                  title: 'Далее',
-                  onSubmit: () {_handleSubmit(context);},
-                )
-              ],
-            ),
-          )
+              ),
+              const SizedBox(height: 12),
+              AuthButton(
+                title: 'Далее',
+                onSubmit: () => _handleSubmit(context),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -63,7 +79,7 @@ class _CompanyRegisterPageState extends State<CompanyRegisterPage> {
         controller: _OKEDController,
       ),
       AuthFormField(
-        label: 'Корпаративная почта',
+        label: 'Корпоративная почта',
         controller: _emailController,
         keyboardType: TextInputType.emailAddress,
       ),
@@ -74,24 +90,96 @@ class _CompanyRegisterPageState extends State<CompanyRegisterPage> {
     ];
   }
 
+  Widget _buildRoleRadios(String text1, String text2) {
+    return Row(
+      children: [
+        Expanded(
+          child: ListTile(
+            title: Text(text1, style: TextStyle(fontSize: 14)),
+            leading: Radio<String>(
+              value: text1,
+              groupValue: _role,
+              onChanged: (value) {
+                setState(() => _role = value!);
+              },
+            ),
+          ),
+        ),
+        Expanded(
+          child: ListTile(
+            title: Text(text2, style: TextStyle(fontSize: 14),),
+            leading: Radio<String>(
+              value: text2,
+              groupValue: _role,
+              onChanged: (value) {
+                setState(() => _role = value!);
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRegistrationTypeCombo() {
+    return DropdownButtonFormField<String>(
+      decoration: InputDecoration(
+        hintText: 'Тип регистрации',
+        hintStyle: const TextStyle(color: Colors.white54, fontSize: 14),
+        filled: true,
+        fillColor: Colors.grey[850],
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      ),
+      value: _registrationType,
+      items: _registrationTypes
+          .map((type) => DropdownMenuItem(
+        value: type,
+        child: Text(type),
+      ))
+          .toList(),
+      onChanged: (value) => setState(() => _registrationType = value),
+      validator: (value) =>
+      value == null ? 'Пожалуйста, выберите тип регистрации' : null,
+    );
+  }
+
   void _handleSubmit(BuildContext context) async {
     if (_formKey.currentState!.validate()) {
       Company? company;
       try {
         company = await companyRepo.createCompany(
-            name: _nameController.text, email: _emailController.text,
-            sphere: _sphereController.text, OKED: _OKEDController.text
+          name: _nameController.text,
+          email: _emailController.text,
+          sphere: _sphereController.text,
+          OKED: _OKEDController.text,
+          registrationType: _registrationType!,
+          typeOrg: _role
         );
-      } on ArgumentError catch(e){
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Такая компания уже зарегистрирована')));
+      } on ArgumentError catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Такая компания уже зарегистрирована')),
+        );
         _talker.error('This company is already registered: $e');
         return;
-      } catch(e){
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Непредвиденная ошибка извините')));
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Непредвиденная ошибка, извините')),
+        );
         _talker.error('Unexpected error: $e');
         return;
       }
-      Navigator.push(context, MaterialPageRoute(builder: (context) => RegisterPage(companyID: company!.id) ));
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => RegisterPage(companyID: company!.id),
+        ),
+      );
     }
   }
 }
+

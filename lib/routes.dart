@@ -3,11 +3,16 @@ import 'package:bizorda/features/auth/pages/company_register_page.dart';
 import 'package:bizorda/features/auth/pages/login_page.dart';
 import 'package:bizorda/features/feed/pages/feed_page.dart';
 import 'package:bizorda/features/main/main_page.dart';
-import 'package:bizorda/features/profile/company_profile_page.dart';
+import 'package:bizorda/features/profile/view/company_profile_page.dart';
+import 'package:bizorda/features/profile/view/create_post_screen.dart';
+import 'package:bizorda/features/profile/view/startup_profile_page.dart';
+import 'package:bizorda/features/settings/settings_page.dart';
 import 'package:bizorda/features/shared/data/models/user.dart';
+import 'package:bizorda/token_notifier.dart';
 import 'package:bizorda/widgets/navigation_widgets/navigation_button.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:talker/talker.dart';
 
 import 'features/messages/pages_screens/messages_page.dart';
 
@@ -51,7 +56,6 @@ class ProtectedRoute extends StatelessWidget {
         if (user != null) {
           return builder(context, user);
         } else {
-          // Defer navigation to next microtask to avoid setState/build conflict
           Future.microtask(() => context.go('/login'));
           return const SizedBox.shrink();
         }
@@ -66,6 +70,7 @@ GoRoute buildProtectedRoute({
   required String token,
   required Widget Function(BuildContext, User) builder,
 }) {
+  Talker().debug('Token in ProtectedRoute $token');
   return GoRoute(
     path: path,
     builder: (context, state) => ProtectedRoute(
@@ -76,16 +81,15 @@ GoRoute buildProtectedRoute({
 }
 
 /// Define all your routes here
-GoRouter createRouter(bool isLoggedIn, String? token) {
-  token ??= '';
 
+GoRouter createRouter(bool isLoggedIn) {
   final protectedPagePaths = [
     '/asaa',
     '/op',
     '/asa',
     '/assss',
     '/docs',
-    '/settings',
+    '/a',
   ];
 
   final protectedPageBuilders = List<Widget Function(BuildContext, User)>.generate(
@@ -94,7 +98,8 @@ GoRouter createRouter(bool isLoggedIn, String? token) {
   );
 
   return GoRouter(
-    initialLocation: isLoggedIn ? '/' : '/login',
+    initialLocation: tokenNotifier.value.isNotEmpty ? '/' : '/login',
+    refreshListenable: tokenNotifier, // 🔄 Auto-refresh when token changes
     routes: [
       GoRoute(path: '/login', builder: (_, __) => const LoginPage()),
       GoRoute(path: '/register', builder: (_, __) => const CompanyRegisterPage()),
@@ -102,30 +107,54 @@ GoRouter createRouter(bool isLoggedIn, String? token) {
       ...List.generate(protectedPagePaths.length, (i) {
         return buildProtectedRoute(
           path: protectedPagePaths[i],
-          token: token!,
+          token: tokenNotifier.value, // ⛽ Always latest token
           builder: protectedPageBuilders[i],
         );
       }),
 
       buildProtectedRoute(
         path: '/profile',
-        token: token,
-        builder: (_, user) => CompanyProfilePage(user: user),
+        token: tokenNotifier.value,
+        builder: (_, user) {
+          return ValueListenableBuilder<String>(
+            valueListenable: typeNotifier,
+            builder: (context, type, _) {
+              if (type == 'Стартап') {
+                return StartupProfilePage(user: user, token: tokenNotifier.value,);
+              } else if (type == 'Бизнес') {
+                return CompanyProfilePage(user: user, token: tokenNotifier.value,);
+              } else {
+                return const Center(child: Text('Неизвестный тип организации'));
+              }
+            },
+          );
+        },
+      ),
+
+      buildProtectedRoute(
+        path: '/create_post',
+        token: tokenNotifier.value,
+        builder: (_, __) => CreatePostScreen(token: tokenNotifier.value),
       ),
       buildProtectedRoute(
         path: '/messages',
-        token: token,
-        builder: (_, user) => MessagesPage(user: user),
+        token: tokenNotifier.value,
+        builder: (_, user) => MessagesPage(user: user, token: tokenNotifier.value,),
+      ),
+      buildProtectedRoute(
+        path: '/settings',
+        token: tokenNotifier.value,
+        builder: (_, user) => SettingsPage(user: user,),
       ),
       buildProtectedRoute(
         path: '/',
-        token: token,
+        token: tokenNotifier.value,
         builder: (_, __) => MainPage(),
       ),
       buildProtectedRoute(
         path: '/feed',
-        token: token,
-        builder: (_, __) => const FeedPage(),
+        token: tokenNotifier.value,
+        builder: (_, __) => FeedPage(token: tokenNotifier.value,),
       ),
     ],
   );

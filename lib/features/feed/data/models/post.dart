@@ -32,4 +32,19 @@ class Post {
     timestamp: DateTime.parse(json['timestamp']),
     likes: json['likes'],
   );
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'content': content,
+      'image': image,
+      'sender_id': senderId,
+      'sender_name': senderName,
+      'company_id': companyId,
+      'company_name': companyName,
+      'timestamp': timestamp.toIso8601String(),
+      'likes': likes,
+    };
+  }
+
 }
