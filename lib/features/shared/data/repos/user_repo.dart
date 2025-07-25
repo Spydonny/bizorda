@@ -40,13 +40,26 @@ class UsersRepo {
 
   Future<User> getUserByName(String name) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/users/$name'),
+      Uri.parse('$baseUrl/users/name/$name'),
       headers: _headers,
     );
     if (response.statusCode == 200) {
       return User.fromJson(jsonDecode(response.body));
     } else {
       throw Exception('User not found');
+    }
+  }
+
+  Future<List<User>> getUserByCompanyId(String companyId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/users/company/$companyId'),
+      headers: _headers,
+    );
+    if(response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      return data.map((e) => User.fromJson(e)).toList();
+    } else {
+      throw Exception('Failed to get user by companyId');
     }
   }
 

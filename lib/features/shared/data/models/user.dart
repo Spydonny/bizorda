@@ -7,6 +7,8 @@ class User extends Equatable {
   final String nationalId;
   final String position;
   final String? avatar;
+  final String? experience;
+  final String? motivation;
 
   const User({
     required this.id,
@@ -15,6 +17,8 @@ class User extends Equatable {
     required this.nationalId,
     required this.position,
     this.avatar,
+    this.experience,
+    this.motivation
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -25,6 +29,8 @@ class User extends Equatable {
       nationalId: json['NationalID'] as String,
       position: json['position'] as String,
       avatar: json['avatar'] as String?,
+      experience: json['experience'] as String?,
+      motivation: json['motivation'] as String?
     );
   }
 
@@ -36,6 +42,8 @@ class User extends Equatable {
       'NationalID': nationalId,
       'position': position,
       'avatar': avatar,
+      'experience': experience,
+      'motivation': motivation
     };
   }
 
@@ -46,6 +54,8 @@ class User extends Equatable {
     String? nationalId,
     String? position,
     String? avatar,
+    String? experience,
+    String? motivation
   }) {
     return User(
       id: id ?? this.id,
@@ -54,10 +64,12 @@ class User extends Equatable {
       nationalId: nationalId ?? this.nationalId,
       position: position ?? this.position,
       avatar: avatar ?? this.avatar,
+      experience: experience ?? this.experience,
+      motivation: motivation ?? this.motivation
     );
   }
 
   @override
-  List<Object?> get props => [id, companyId, fullname, nationalId, position, avatar];
+  List<Object?> get props => [id, companyId, fullname, nationalId, position, avatar, experience, motivation];
 
 }

@@ -1,11 +1,14 @@
 import 'package:bizorda/features/messages/pages_screens/chat_screen.dart';
 import 'package:bizorda/features/profile/widgets/startup/contact_info_card_read_only.dart';
+import 'package:bizorda/features/profile/widgets/startup/tabs/team_tab.dart';
+import 'package:bizorda/features/shared/data/repos/user_repo.dart';
 import 'package:bizorda/token_notifier.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../widgets/loading/loading_widget.dart';
 import '../../../widgets/navigation_widgets/navigation_button.dart';
+import '../../shared/data/models/user.dart';
 import '../logic/bloc/company_profile_bloc.dart';
 import '../widgets/shared/posts_list.dart';
 import '../widgets/startup/widgets.dart';
@@ -19,88 +22,104 @@ class OthersStartupProfilePage extends StatefulWidget {
 }
 
 class _OthersStartupProfilePageState extends State<OthersStartupProfilePage>
-    with SingleTickerProviderStateMixin{
+    with SingleTickerProviderStateMixin {
   late final TabController _tabController;
   final ValueNotifier<int> selectedIndex = ValueNotifier<int>(0);
+
+  final List<User> _teamMembers = [];
+  final List<Widget> cards = [];
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 5, vsync: this);
+
     context.read<CompanyProfileBloc>().add(
-      LoadCompanyProfile(
-        widget.companyID,
-        tokenNotifier.value,
-      ),
+      LoadCompanyProfile(widget.companyID, tokenNotifier.value),
     );
+
+    _loadTeamMembers(widget.companyID);
+  }
+
+  Future<void> _loadTeamMembers(String companyId) async {
+    try {
+      final _repo = UsersRepo(token: tokenNotifier.value);
+      final users = await _repo.getUserByCompanyId(companyId);
+      setState(() {
+        _teamMembers.clear();
+        _teamMembers.addAll(users);
+        cards.clear();
+        cards.addAll(_teamMembers.map((user) => UserCard(user: user)));
+        isLoading = false;
+      });
+    } catch (e, stack) {
+      debugPrint('Ошибка при загрузке пользователей: $e');
+      setState(() => isLoading = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<CompanyProfileBloc, CompanyProfileState>(
-            buildWhen: (previous, current) => current is CompanyProfileLoaded,
-            builder: (context, state) {
-              if (state is CompanyProfileError) {
-                return Center(child: Text('Ошибка: ${state.message}'));
-              }
-              else if (state is CompanyProfileLoaded) {
-                final company = state.company;
-                final posts = state.posts;
+      buildWhen: (previous, current) => current is CompanyProfileLoaded,
+      builder: (context, state) {
+        if (state is CompanyProfileError) {
+          return Center(child: Text('Ошибка: ${state.message}'));
+        } else if (state is CompanyProfileLoaded) {
+          final company = state.company;
+          final posts = state.posts;
 
-                return Scaffold(
-                  backgroundColor: Colors.black,
-                  appBar: AppBar(
-                    title: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                      ],
-                    ),
-                  ),
-                  body: SafeArea(
-                    child: Column(
-                      children: [
-                        Expanded(
-                          child: SingleChildScrollView(
-                            child: Column(
+          return Scaffold(
+            backgroundColor: Colors.black,
+            appBar: AppBar(
+              title: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: const [],
+              ),
+            ),
+            body: SafeArea(
+              child: Column(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          StartupHeader(
+                            name: '${company.typeOfRegistration} ${company.name}',
+                            sphere: company.sphere,
+                            onConnect: () {},
+                          ),
+                          const SizedBox(height: 16),
+                          ContactInfoCardReadOnly(company: company),
+                          const SizedBox(height: 24),
+                          _buildTabs(),
+                          SizedBox(
+                            height: 600,
+                            child: TabBarView(
+                              controller: _tabController,
                               children: [
-                                StartupHeader(
-                                  name: '${company.typeOfRegistration} ${company.name}',
-                                  sphere: company.sphere,
-                                  onConnect: () {
-                                  },
-                                ),
-                                const SizedBox(height: 16),
-                                ContactInfoCardReadOnly(company: company),
-                                const SizedBox(height: 24),
-                                _buildTabs(),
-                                SizedBox(
-                                  height: 600,
-                                  child: TabBarView(
-                                    controller: _tabController,
-                                    children: [
-                                      StartupAboutTab(text: company.description,),
-                                      ///temp
-                                      Center(child: Text('Команда', style: TextStyle(color: Colors.white))),
-                                      PostsList(posts: posts),
-                                      MetricsTabReadOnly(company: company),
-                                      InvestmentTabReadOnly(company: company)
-                                    ],
-                                  ),
-                                ),
+                                StartupAboutTab(text: company.description),
+                                TeamTab(cards: cards, isLoading: isLoading),
+                                PostsList(posts: posts),
+                                MetricsTabReadOnly(company: company),
+                                InvestmentTabReadOnly(company: company),
                               ],
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                );
-              }
-              return const LoadingWidget(title: '');
-            }
+                ],
+              ),
+            ),
+          );
+        }
+        return const LoadingWidget(title: '');
+      },
     );
   }
-
 
   Widget _buildTabs() {
     return TabBar(
@@ -118,7 +137,6 @@ class _OthersStartupProfilePageState extends State<OthersStartupProfilePage>
       ],
     );
   }
-
 }
 
 

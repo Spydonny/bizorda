@@ -64,7 +64,9 @@ class ContactInfoContainer extends StatelessWidget {
               ),
             ],
           ),
-          bottomWidget ?? SizedBox()
+          Padding(padding: EdgeInsets.only(top: 16),
+            child: bottomWidget ?? SizedBox(),
+          ),
         ],
       ),
     );
