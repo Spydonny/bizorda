@@ -1,4 +1,5 @@
 import 'package:bizorda/features/messages/pages_screens/chat_screen.dart';
+import 'package:bizorda/features/profile/widgets/shared/reviews_list.dart';
 import 'package:bizorda/features/profile/widgets/startup/contact_info_card_read_only.dart';
 import 'package:bizorda/features/profile/widgets/startup/tabs/team_tab.dart';
 import 'package:bizorda/features/shared/data/repos/user_repo.dart';
@@ -23,6 +24,17 @@ class OthersStartupProfilePage extends StatefulWidget {
 
 class _OthersStartupProfilePageState extends State<OthersStartupProfilePage>
     with SingleTickerProviderStateMixin {
+
+  static List<Widget> tabs = [
+    Tab(text: 'О стартапе'),
+    Tab(text: 'Команда'),
+    Tab(text: 'Обновления'),
+    Tab(text: 'Метрики'),
+    Tab(text: 'Инвестиции'),
+    Tab(text: 'Медиа',),
+    Tab(text: 'Отзывы')
+  ];
+  
   late final TabController _tabController;
   final ValueNotifier<int> selectedIndex = ValueNotifier<int>(0);
 
@@ -33,7 +45,7 @@ class _OthersStartupProfilePageState extends State<OthersStartupProfilePage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 5, vsync: this);
+    _tabController = TabController(length: tabs.length, vsync: this);
 
     context.read<CompanyProfileBloc>().add(
       LoadCompanyProfile(widget.companyID, tokenNotifier.value),
@@ -104,6 +116,7 @@ class _OthersStartupProfilePageState extends State<OthersStartupProfilePage>
                                 PostsList(posts: posts),
                                 MetricsTabReadOnly(company: company),
                                 InvestmentTabReadOnly(company: company),
+                                ReviewsList(companyId: widget.companyID, isThemSelf: false,)
                               ],
                             ),
                           ),
@@ -128,13 +141,7 @@ class _OthersStartupProfilePageState extends State<OthersStartupProfilePage>
       indicatorColor: Colors.white,
       labelColor: Colors.white,
       unselectedLabelColor: Colors.white54,
-      tabs: const [
-        Tab(text: 'О стартапе'),
-        Tab(text: 'Команда'),
-        Tab(text: 'Обновления'),
-        Tab(text: 'Метрики'),
-        Tab(text: 'Инвестиции'),
-      ],
+      tabs: tabs,
     );
   }
 }

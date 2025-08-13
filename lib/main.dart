@@ -1,7 +1,7 @@
 import 'package:bizorda/features/auth/data/repos/auth_repo.dart';
-import 'package:bizorda/features/auth/pages/company_register_page.dart';
 import 'package:bizorda/features/profile/logic/bloc/company_profile_bloc.dart';
 import 'package:bizorda/routes.dart';
+import 'package:bizorda/service_locator.dart';
 import 'package:bizorda/theme.dart';
 import 'package:bizorda/token_notifier.dart';
 import 'package:flutter/foundation.dart';
@@ -32,6 +32,7 @@ void main() async {
   );
 
   timeago.setLocaleMessages('ru', timeago.RuMessages());
+  setupLocator();
   runApp(MyRouterWrapper(isLoggedIn: isLoggedIn,));
 }
 

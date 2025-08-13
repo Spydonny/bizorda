@@ -1,5 +1,7 @@
 import 'package:bizorda/features/profile/widgets/startup/button_local.dart';
 import 'package:flutter/material.dart';
+import 'package:mailer/mailer.dart';
+import 'package:mailer/smtp_server/gmail.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'contact_info_container.dart';
@@ -15,7 +17,7 @@ class ContactInfoCard extends StatefulWidget {
     required this.ratingController,
     required this.statusController,
     required this.teamController,
-    required this.fundingController,
+    required this.fundingController, required this.companyName, required this.username,
   });
 
   final ValueNotifier<bool> isEditing;
@@ -29,6 +31,9 @@ class ContactInfoCard extends StatefulWidget {
   final TextEditingController statusController;
   final TextEditingController teamController;
   final TextEditingController fundingController;
+
+  final String companyName;
+  final String username;
 
   @override
   State<ContactInfoCard> createState() => _ContactInfoCardState();
@@ -66,7 +71,9 @@ class _ContactInfoCardState extends State<ContactInfoCard> {
         rating: widget.ratingController.text, status: widget.statusController.text,
         team: widget.teamController.text, funding: '${widget.fundingController.text} USD',
         bottomWidget: ButtonLocal(label: 'Отправить модерацию', iconData: Icons.insert_drive_file,
-        onPressed: sendEmail,),
+        onPressed: () {
+          sendEmail(widget.username, widget.companyName);
+        },),
     );
   }
 
@@ -131,20 +138,24 @@ class _ContactInfoCardState extends State<ContactInfoCard> {
     }
   }
 
-  Future<void> sendEmail() async {
-    final uri = Uri(
-      scheme: 'mailto',
-      path: 'recipient@example.com',
-      queryParameters: {
-        'subject': 'Тема письма',
-        'body': 'Текст письма'
-      },
-    );
-    final url = uri.toString();
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    } else {
-      throw 'Не удалось запустить: $url';
+  Future<void> sendEmail(String username, String companyName) async {
+    final smtpServer = gmail('omralitamer64@gmail.com', 'xmpk rwml duvl yrfa'); // App password, НЕ обычный пароль!
+
+    final message = Message()
+      ..from = Address('omralitamer64@gmail.com', 'Tamerlan')
+      ..recipients.add('bazarkatzandos@gmail.com')
+      ..subject = 'Запрос от $username'
+      ..text = '$companyName хочет податся на финансирование';
+
+    try {
+      final sendReport = await send(message, smtpServer);
+      print('Письмо отправлено: ' + sendReport.toString());
+    } on MailerException catch (e) {
+      print('Ошибка: $e');
+      for (var p in e.problems) {
+        print('Проблема: ${p.code}: ${p.msg}');
+      }
     }
   }
+
 }

@@ -61,7 +61,7 @@ class _OthersCompanyProfilePageState extends State<OthersCompanyProfilePage> {
                   company: company,
                 ),
                 PostsList(posts: posts),
-                const ReviewsList(),
+                ReviewsList(companyId: widget.companyId, isThemSelf: false,),
                 const Placeholder(),
               ];
 

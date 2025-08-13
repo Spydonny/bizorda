@@ -13,6 +13,48 @@ class UsersRepo {
     if (token != null) 'Authorization': 'Bearer $token',
   };
 
+  Future<User?> createUser({
+    required String fullname,
+    required String nationalID,
+    required String position,
+    required String password,
+    required String companyId,
+    String? experience,
+    String? motivation,
+  }) async {
+    final uri = Uri.parse('$baseUrl/users/').replace(
+      queryParameters: {
+        'fullname': fullname,
+        'NationalID': nationalID,
+        'position': position,
+        'password': password,
+        'company_id': companyId,
+        if (experience != null) 'experience': experience,
+        if (motivation != null) 'motivation': motivation,
+      },
+    );
+
+    try {
+      final response = await http.post(
+        uri,
+        headers: _headers,
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        return User.fromJson(data);
+      } else if (response.statusCode == 400) {
+        throw Exception("User already exists: ${response.body}");
+      } else {
+        throw Exception("Failed to create user: ${response.statusCode} ${response.body}");
+      }
+    } catch (e) {
+      throw Exception('Error creating user: $e');
+    }
+  }
+
+
+
   Future<List<User>> getUsers() async {
     final response = await http.get(
       Uri.parse('$baseUrl/users/'),

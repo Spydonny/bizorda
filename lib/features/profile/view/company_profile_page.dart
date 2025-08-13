@@ -144,7 +144,7 @@ class _CompanyProfilePageState extends State<CompanyProfilePage> {
                 controller: descriptionController,
               ),
               PostsList(posts: posts, onAdd: () => context.go('/create_post')),
-              const ReviewsList(),
+              ReviewsList(companyId: widget.user.companyId,),
               const Placeholder(),
             ];
 

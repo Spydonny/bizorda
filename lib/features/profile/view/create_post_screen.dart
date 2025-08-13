@@ -5,6 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../widgets/shared/profile_text_field.dart';
+import '../widgets/shared/submit_button.dart';
+
 class CreatePostScreen extends StatefulWidget {
   const CreatePostScreen({super.key, required this.token});
   final String token;
@@ -92,21 +95,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               const SizedBox(height: 20),
 
               // Поле описания
-              TextField(
-                controller: contentController,
-                style: const TextStyle(color: Colors.white),
-                maxLines: 3,
-                decoration: InputDecoration(
-                  hintText: 'Описание поста...',
-                  hintStyle: const TextStyle(color: Colors.white54),
-                  filled: true,
-                  fillColor: Colors.grey[850],
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
+              ProfileTextField(controller: contentController, hintText: 'Описание поста...'),
               const SizedBox(height: 12),
 
               // Предпросмотр изображения
@@ -143,23 +132,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  ElevatedButton(
-                    onPressed: () {
-                      createPost(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue[600],
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: const Text(
-                      'Создать',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
+                  SubmitButton(
+                    onPressed: () => createPost(context),
+                  )
                 ],
               ),
             ],
@@ -169,3 +144,4 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     );
   }
 }
+

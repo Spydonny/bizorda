@@ -1,4 +1,6 @@
 import 'package:bizorda/features/profile/widgets/shared/posts_list.dart';
+import 'package:bizorda/features/profile/widgets/shared/reviews_list.dart';
+import 'package:bizorda/features/profile/widgets/startup/add_user_container.dart';
 import 'package:bizorda/features/profile/widgets/startup/tabs/team_tab.dart';
 import 'package:bizorda/features/profile/widgets/startup/widgets.dart';
 import 'package:bizorda/token_notifier.dart';
@@ -26,18 +28,36 @@ class StartupProfilePage extends StatefulWidget {
 }
 
 class _StartupProfilePageState extends State<StartupProfilePage> with SingleTickerProviderStateMixin {
+
+  static List<Widget> tabs = [
+    Tab(text: 'О стартапе'),
+    Tab(text: 'Команда'),
+    Tab(text: 'Обновления'),
+    Tab(text: 'Метрики'),
+    Tab(text: 'Инвестиции'),
+    Tab(text: 'Медиа',),
+    Tab(text: 'Отзывы')
+  ];
+
   late final TabController _tabController;
   final ValueNotifier<bool> isEditing = ValueNotifier<bool>(false);
   final List<User> _teamMembers = [];
   final List<Widget> cards = [];
   bool _isLoadingTeam = true;
 
+  final TextEditingController fullnameCtrl = TextEditingController();
+  final TextEditingController nationalIDCtrl = TextEditingController();
+  final TextEditingController positionCtrl = TextEditingController();
+  final TextEditingController passwordCtrl = TextEditingController();
+  final TextEditingController experienceCtrl = TextEditingController();
+  final TextEditingController motivationCtrl = TextEditingController();
+
   late final Map<String, TextEditingController> _controllers;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 5, vsync: this);
+    _tabController = TabController(length: tabs.length, vsync: this);
     _initControllers();
 
     context.read<CompanyProfileBloc>().add(
@@ -79,6 +99,47 @@ class _StartupProfilePageState extends State<StartupProfilePage> with SingleTick
     context.read<CompanyProfileBloc>().add(ResetCompanyProfile());
     super.dispose();
   }
+
+  Future<void> _handleSaveUser(BuildContext context) async {
+    final repo = UsersRepo(token: tokenNotifier.value);
+    final fullname = fullnameCtrl.text.trim();
+    final nationalID = nationalIDCtrl.text.trim();
+    final position = positionCtrl.text.trim();
+    final password = passwordCtrl.text.trim();
+    final experience = experienceCtrl.text.trim();
+    final motivation = motivationCtrl.text.trim();
+
+    if (fullname.isEmpty || nationalID.isEmpty || position.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Пожалуйста, заполните обязательные поля')),
+      );
+      return;
+    }
+
+    try {
+      await repo.createUser(
+        fullname: fullname,
+        nationalID: nationalID,
+        position: position,
+        password: password,
+        companyId: widget.user.companyId,
+        experience: experience.isNotEmpty ? experience : null,
+        motivation: motivation.isNotEmpty ? motivation : null,
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Пользователь успешно создан')),
+      );
+
+      Navigator.pop(context); // Закрыть диалог
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Ошибка при создании: $e'))
+      );
+      Talker().error(e.toString());
+    }
+  }
+
 
   Future<void> _loadTeamMembers(String companyId) async {
     final _repo = UsersRepo(token: tokenNotifier.value);
@@ -205,6 +266,8 @@ class _StartupProfilePageState extends State<StartupProfilePage> with SingleTick
                     statusController: TextEditingController(text: 'Публичный'),
                     teamController: TextEditingController(text: '1 чел.'),
                     fundingController: _controllers['required']!,
+                    username: widget.user.fullname,
+                    companyName: "${c.typeOfRegistration} ${c.name}",
                   ),
                   const SizedBox(height: 24),
                   _buildTabs(),
@@ -214,7 +277,16 @@ class _StartupProfilePageState extends State<StartupProfilePage> with SingleTick
                       controller: _tabController,
                       children: [
                         StartupAboutTab(isEditing: isEditing, controller: _controllers['description']!),
-                        TeamTab(cards: cards, isLoading: _isLoadingTeam),
+                        TeamTab(cards: cards, isLoading: _isLoadingTeam, onAdd: () {
+                          Navigator.push(context,
+                              MaterialPageRoute(builder: (context) => AddUserContainer(
+                                  fullnameCtrl: fullnameCtrl, nationalIDCtrl: nationalIDCtrl,
+                                  positionCtrl: positionCtrl, passwordCtrl: passwordCtrl,
+                                  experienceCtrl: experienceCtrl, motivationCtrl: motivationCtrl,
+                              onSave: () { _handleSaveUser(context); },))
+                          );
+                          },
+                        ),
                         PostsList(posts: p, onAdd: () => context.go('/create_post')),
                         MetricsTabEditable(
                           isEditing: isEditing,
@@ -233,6 +305,8 @@ class _StartupProfilePageState extends State<StartupProfilePage> with SingleTick
                           shareController: _controllers['share']!,
                           modelController: _controllers['model']!,
                         ),
+                        DocsTab(cards: [FinancialReportCard()]),
+                        ReviewsList(companyId: widget.user.companyId,)
                       ],
                     ),
                   ),
@@ -252,13 +326,7 @@ class _StartupProfilePageState extends State<StartupProfilePage> with SingleTick
       indicatorColor: Colors.white,
       labelColor: Colors.white,
       unselectedLabelColor: Colors.white54,
-      tabs: const [
-        Tab(text: 'О стартапе'),
-        Tab(text: 'Команда'),
-        Tab(text: 'Обновления'),
-        Tab(text: 'Метрики'),
-        Tab(text: 'Инвестиции'),
-      ],
+      tabs: tabs,
     );
   }
 
