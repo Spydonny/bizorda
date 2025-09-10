@@ -20,7 +20,6 @@ class ContactInfoCardReadOnly extends StatelessWidget {
             ),
             _buildInfoField(
               icon: Icons.email,
-              isLink: true,
               value: company.email,
             ),
             _buildInfoField(

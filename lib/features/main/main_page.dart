@@ -4,10 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:bizorda/features/main/widgets/filter_widget.dart';
 import 'package:bizorda/token_notifier.dart';
 import '../../widgets/navigation_widgets/navigation_button.dart';
-import '../shared/data/models/company.dart';
-import '../shared/data/models/user.dart';
-import '../shared/data/repos/company_repo.dart';
-import '../shared/data/repos/user_repo.dart';
+import '../shared/data/data.dart';
 
 /// Класс-результат диалога фильтрации
 class FilterCriteria {
@@ -61,27 +58,34 @@ class _MainPageState extends State<MainPage>
   }
 
   Future<void> _loadData() async {
-    final rawCompanies = await _companyRepo.listCompanies();
-    final companies =
-    rawCompanies.map((json) => Company.fromJson(json)).toList();
-    final users = await _usersRepo.getUsers();
+    try {
+      final rawCompanies = await _companyRepo.listCompanies();
+      final companies = rawCompanies.map((json) => Company.fromJson(json)).toList();
+      final users = await _usersRepo.getUsers();
 
-    final list = companies.map((c) {
-      final user =
-      users.firstWhere((u) => u.companyId == c.id);
-      // Для примера рейтинг рандомный
-      return _CompanyWithUser(
-        company: c,
-        userFullName: user.fullname ?? '',
-        rating: Random().nextInt(3) + 2.0,
-      );
-    }).toList();
+      final list = companies.map((c) {
+        // Пытаемся найти пользователя по companyId
+        final user = users.firstWhere(
+              (u) => u.companyId == c.id,
+          orElse: () => User(fullname: '—', companyId: c.id, id: '', nationalId: '', position: ''), // Заглушка
+        );
 
-    setState(() {
-      _allItems = list;
-      _applyFilters();
-    });
+        return _CompanyWithUser(
+          company: c,
+          userFullName: user.fullname,
+          rating: Random().nextInt(3) + 2.0,
+        );
+      }).toList();
+
+      setState(() {
+        _allItems = list;
+        _applyFilters();
+      });
+    } catch (e, st) {
+      debugPrint('Ошибка при загрузке данных: $e\n$st');
+    }
   }
+
 
   /// Применяем фильтры из _criteria к _allItems
   void _applyFilters() {
@@ -89,10 +93,7 @@ class _MainPageState extends State<MainPage>
       _filteredItems = _allItems.where((item) {
         final c = item.company;
 
-        if (_criteria.regType != null && c.typeOrg != _criteria.regType) {
-          return false;
-        }
-        if (_criteria.status != null && 'Свободен' != _criteria.status) {
+        if (_criteria.regType != null && c.typeOfRegistration != _criteria.regType) {
           return false;
         }
         if (_criteria.orgType != null && c.typeOrg != _criteria.orgType) {
@@ -187,7 +188,7 @@ class _MainPageState extends State<MainPage>
         ),
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [Tab(text: 'Бизнесы'), Tab(text: 'Инвесторы')],
+          tabs: const [Tab(text: 'Стартапы'), Tab(text: 'Инвесторы')],
         ),
       ),
       body: TabBarView(

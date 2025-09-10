@@ -70,8 +70,7 @@ class _CompanyHeaderState extends State<CompanyHeader> {
                                 text: widget.phoneController.text),
                             _buildInfoRow(
                                 icon: Icons.email,
-                                text: widget.emailController.text,
-                                isLink: true),
+                                text: widget.emailController.text),
                             _buildInfoRow(
                                 icon: Icons.link,
                                 text: widget.websiteController.text,

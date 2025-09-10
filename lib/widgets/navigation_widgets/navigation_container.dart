@@ -51,7 +51,6 @@ class _NavigationContainerState extends State<NavigationContainer> {
             Icons.person_outline,
             Icons.chat_bubble_outline,
             Icons.feed_outlined,
-            Icons.description_outlined,
             Icons.settings_outlined,
           ];
           final List<String> titles = [
@@ -59,7 +58,6 @@ class _NavigationContainerState extends State<NavigationContainer> {
             'ПРОФИЛЬ',
             'СООБЩЕНИЯ',
             'ЛЕНТА НОВОСТЕЙ',
-            'ДОКУМЕНТЫ',
             'НАСТРОЙКИ',
           ];
           final List<String> routes = [
@@ -67,7 +65,6 @@ class _NavigationContainerState extends State<NavigationContainer> {
             '/profile',
             '/messages',
             '/feed',
-            '/docs',
             '/settings'
           ];
           final isChosen = idx == widget.chosenIdx;

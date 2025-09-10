@@ -48,7 +48,6 @@ class _CompanyRegisterPageState extends State<CompanyRegisterPage> {
               _buildRegistrationTypeCombo(),
               const SizedBox(height: 16),
               _buildRoleRadios('Стартап','Инвестор'),
-              _buildRoleRadios('Исполнитель','Подрядчик'),
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(

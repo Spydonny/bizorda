@@ -48,7 +48,7 @@ class CompanyHeaderReadOnly extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildInfoRow(icon: Icons.phone, text: company.phoneNumber ?? 'Не указан'),
-                      _buildInfoRow(icon: Icons.email, text: company.email, isLink: true),
+                      _buildInfoRow(icon: Icons.email, text: company.email),
                       _buildInfoRow(icon: Icons.link, text: company.website ?? 'Не указан', isLink: true),
                       _buildInfoRow(icon: Icons.location_on_outlined, text: company.location ?? 'Не указан'),
                     ],

@@ -55,7 +55,6 @@ class _ContactInfoCardState extends State<ContactInfoCard> {
         _buildInfoField(
           icon: Icons.email,
           controller: widget.emailController,
-          isLink: true,
         ),
         _buildInfoField(
           icon: Icons.language,
