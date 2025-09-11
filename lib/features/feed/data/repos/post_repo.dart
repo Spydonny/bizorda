@@ -8,7 +8,7 @@ import 'package:http_parser/http_parser.dart';
 import '../models/post.dart';
 
 class PostRepository {
-  final String baseUrl = 'https://enterra-api.onrender.com';
+  final String baseUrl = 'https://enterra-api-production.up.railway.app';
   final String token;
 
   PostRepository({ required this.token});

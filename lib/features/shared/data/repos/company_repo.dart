@@ -9,7 +9,7 @@ import 'package:path/path.dart';
 
 
 class CompanyRepository {
-  final String baseUrl = 'https://enterra-api.onrender.com';
+  final String baseUrl = 'https://enterra-api-production.up.railway.app';
 
 
   // CREATE

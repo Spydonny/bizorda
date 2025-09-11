@@ -11,7 +11,7 @@ import '../../../../exceptions/exceptions.dart';
 
 
 class AuthRepository {
-  final baseUrl = 'https://enterra-api.onrender.com';
+  final baseUrl = 'https://enterra-api-production.up.railway.app';
 
   Future<String> login({
     required String nationalID,

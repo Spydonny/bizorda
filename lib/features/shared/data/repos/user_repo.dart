@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import '../models/user.dart';
 
 class UsersRepo {
-  final String baseUrl = 'https://enterra-api.onrender.com';
+  final String baseUrl = 'https://enterra-api-production.up.railway.app';
   final String? token;
 
   UsersRepo({this.token});
