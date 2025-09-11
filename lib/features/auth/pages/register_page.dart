@@ -58,7 +58,7 @@ class _RegisterPageState extends State<RegisterPage> {
               const SizedBox(height: 12),
               AuthButton(
                 title: 'Зарегестрироваться',
-                onSubmit: (){ _handleSubmit(context);},
+                onSubmit: () => _handleSubmit(context),
               )
             ],
           ),
@@ -96,7 +96,7 @@ class _RegisterPageState extends State<RegisterPage> {
     ];
   }
 
-  void _handleSubmit(BuildContext context) async {
+  Future<void> _handleSubmit(BuildContext context) async {
     if (_formKey.currentState!.validate()) {
       User? user;
 

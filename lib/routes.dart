@@ -1,6 +1,7 @@
 import 'package:bizorda/features/auth/data/repos/auth_repo.dart';
 import 'package:bizorda/features/auth/pages/company_register_page.dart';
 import 'package:bizorda/features/auth/pages/login_page.dart';
+import 'package:bizorda/features/auth/pages/temp_reg_page.dart';
 import 'package:bizorda/features/feed/pages/feed_page.dart';
 import 'package:bizorda/features/main/main_page.dart';
 import 'package:bizorda/features/profile/view/company_profile_page.dart';
@@ -10,6 +11,7 @@ import 'package:bizorda/features/settings/settings_page.dart';
 import 'package:bizorda/features/shared/data/models/user.dart';
 import 'package:bizorda/token_notifier.dart';
 import 'package:bizorda/widgets/navigation_widgets/navigation_button.dart';
+import 'package:bizorda/widgets/splash_page/splash_page.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:talker/talker.dart';
@@ -98,11 +100,11 @@ GoRouter createRouter(bool isLoggedIn) {
   );
 
   return GoRouter(
-    initialLocation: tokenNotifier.value.isNotEmpty ? '/' : '/login',
+    initialLocation: '/splash',
     refreshListenable: tokenNotifier, // 🔄 Auto-refresh when token changes
     routes: [
       GoRoute(path: '/login', builder: (_, __) => const LoginPage()),
-      GoRoute(path: '/register', builder: (_, __) => const CompanyRegisterPage()),
+      GoRoute(path: '/register', builder: (_, __) => const TempRegPage()),
 
       ...List.generate(protectedPagePaths.length, (i) {
         return buildProtectedRoute(
@@ -156,6 +158,11 @@ GoRouter createRouter(bool isLoggedIn) {
         token: tokenNotifier.value,
         builder: (_, __) => FeedPage(token: tokenNotifier.value,),
       ),
+      buildProtectedRoute(
+          path: '/splash',
+          token: tokenNotifier.value,
+          builder: (_, __) => SplashPage(accessToken: tokenNotifier.value,)
+      )
     ],
   );
 }

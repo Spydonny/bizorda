@@ -37,12 +37,9 @@ class MainPage extends StatefulWidget {
   State<MainPage> createState() => _MainPageState();
 }
 
-class _MainPageState extends State<MainPage>
-    with SingleTickerProviderStateMixin {
+class _MainPageState extends State<MainPage> {
   final CompanyRepository _companyRepo = CompanyRepository();
   final UsersRepo _usersRepo = UsersRepo(token: tokenNotifier.value);
-
-  late TabController _tabController;
 
   List<_CompanyWithUser> _allItems = [];
   List<_CompanyWithUser> _filteredItems = [];
@@ -53,7 +50,6 @@ class _MainPageState extends State<MainPage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
     _loadData();
   }
 
@@ -64,10 +60,15 @@ class _MainPageState extends State<MainPage>
       final users = await _usersRepo.getUsers();
 
       final list = companies.map((c) {
-        // Пытаемся найти пользователя по companyId
         final user = users.firstWhere(
               (u) => u.companyId == c.id,
-          orElse: () => User(fullname: '—', companyId: c.id, id: '', nationalId: '', position: ''), // Заглушка
+          orElse: () => User(
+            fullname: '—',
+            companyId: c.id,
+            id: '',
+            nationalId: '',
+            position: '',
+          ),
         );
 
         return _CompanyWithUser(
@@ -85,7 +86,6 @@ class _MainPageState extends State<MainPage>
       debugPrint('Ошибка при загрузке данных: $e\n$st');
     }
   }
-
 
   /// Применяем фильтры из _criteria к _allItems
   void _applyFilters() {
@@ -110,9 +110,7 @@ class _MainPageState extends State<MainPage>
           return false;
         }
         if (_criteria.chefQuery.isNotEmpty &&
-            !item.userFullName
-                .toLowerCase()
-                .contains(_criteria.chefQuery.toLowerCase())) {
+            !item.userFullName.toLowerCase().contains(_criteria.chefQuery.toLowerCase())) {
           return false;
         }
         return true;
@@ -120,13 +118,10 @@ class _MainPageState extends State<MainPage>
     });
   }
 
-  /// Открываем диалог и ждём нового набора фильтров
   Future<void> _openFilterDialog() async {
     final result = await showDialog<FilterCriteria>(
       context: context,
-      builder: (_) => FilterDialog(
-        initialCriteria: _criteria,
-      ),
+      builder: (_) => FilterDialog(initialCriteria: _criteria),
     );
 
     if (result != null) {
@@ -159,20 +154,7 @@ class _MainPageState extends State<MainPage>
   }
 
   @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final businesses = _filteredItems
-        .where((e) => e.company.typeOrg != 'Инвестор')
-        .toList();
-    final investors = _filteredItems
-        .where((e) => e.company.typeOrg == 'Инвестор')
-        .toList();
-
     return Scaffold(
       appBar: AppBar(
         leading: NavigationButton(chosenIdx: 0),
@@ -186,18 +168,8 @@ class _MainPageState extends State<MainPage>
             ),
           ],
         ),
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [Tab(text: 'Стартапы'), Tab(text: 'Инвесторы')],
-        ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildGrid(businesses),
-          _buildGrid(investors),
-        ],
-      ),
+      body: _buildGrid(_filteredItems),
     );
   }
 }

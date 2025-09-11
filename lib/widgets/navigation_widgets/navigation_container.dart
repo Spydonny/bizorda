@@ -45,7 +45,7 @@ class _NavigationContainerState extends State<NavigationContainer> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          ...List.generate(6, (int idx) {
+          ...List.generate(4, (int idx) {
           final List<IconData> icons = [
             Icons.home_outlined,
             Icons.person_outline,

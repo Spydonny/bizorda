@@ -62,6 +62,18 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
+  flutter_native_splash: ^2.4.6
+
+
+flutter_native_splash:
+  color: "#ff0000"           # Цвет фона
+  image: assets/logo/enterra.jpg   # Лого
+  android: true              # Включить для Android
+  ios: true                  # Включить для iOS
+  android_12: # Отдельный блок для Android 12+
+    image: assets/logo/enterra.jpg
+    icon_background_color: "#ff0000"
+
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -78,6 +90,7 @@ flutter:
   assets:
    - assets/messages/read.png
    - assets/messages/send.png
+   - assets/logo/enterra.jpg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:talker/talker.dart';
 import '../../../token_notifier.dart';
+import '../../shared/data/models/user.dart';
 import '../widgets/widgets.dart';
 
 class LoginPage extends StatefulWidget {
@@ -18,6 +19,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final authRepository = AuthRepository();
+  final talker = Talker();
 
   final TextEditingController _nationalIDController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -42,7 +44,7 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 12),
                 AuthButton(
                   title: 'Войти',
-                  onSubmit: () {_handleSubmit(context);},
+                  onSubmit: () => _handleSubmit(context),
                 )
               ],
             ),
@@ -66,7 +68,7 @@ class _LoginPageState extends State<LoginPage> {
     ];
   }
 
-  void _handleSubmit(BuildContext context) async {
+  Future<void> _handleSubmit(BuildContext context) async {
     final shared = await SharedPreferences.getInstance();
     if (_formKey.currentState!.validate()) {
       String? token;
@@ -79,15 +81,14 @@ class _LoginPageState extends State<LoginPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Перепроверьте ИИН или пароль')),
         );
-        return;
+        rethrow;
       }
       Talker().debug(token);
       shared.setString('access_token', token);
       await Future.delayed(Duration(seconds: 2));
-      if (!context.mounted) return;
       tokenNotifier.value = token;
+      if (!context.mounted) return;
       context.go('/');
-      // context.go('/');
     }
   }
 

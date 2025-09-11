@@ -146,7 +146,7 @@ class _CompanyRegisterPageState extends State<CompanyRegisterPage> {
     );
   }
 
-  void _handleSubmit(BuildContext context) async {
+  Future<void> _handleSubmit(BuildContext context) async {
     if (_formKey.currentState!.validate()) {
       Company? company;
       try {
