@@ -8,6 +8,7 @@ class Post {
   final String companyName;
   final DateTime timestamp;
   final int likes;
+  final List<String> idsLiked;
 
   Post({
     required this.id,
@@ -19,6 +20,7 @@ class Post {
     required this.companyName,
     required this.timestamp,
     required this.likes,
+    required this.idsLiked
   });
 
   factory Post.fromJson(Map<String, dynamic> json) => Post(
@@ -31,6 +33,7 @@ class Post {
     companyName: json['company_name'],
     timestamp: DateTime.parse(json['timestamp']),
     likes: json['likes'],
+    idsLiked: json['ids_liked']
   );
 
   Map<String, dynamic> toJson() {
@@ -44,6 +47,7 @@ class Post {
       'company_name': companyName,
       'timestamp': timestamp.toIso8601String(),
       'likes': likes,
+      'ids_liked': idsLiked
     };
   }
 

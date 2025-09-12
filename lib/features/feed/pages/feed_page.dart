@@ -1,8 +1,10 @@
 import 'package:bizorda/features/feed/widgets/post_item.dart';
+import 'package:bizorda/features/shared/data/data.dart';
 import 'package:bizorda/widgets/navigation_widgets/navigation_button.dart';
 import 'package:flutter/material.dart';
 import 'package:talker/talker.dart';
 
+import '../../auth/data/repos/auth_repo.dart';
 import '../data/models/post.dart';
 import '../data/repos/post_repo.dart';
 
@@ -21,6 +23,7 @@ class _FeedPageState extends State<FeedPage> {
 
   List<Post> _posts = [];
   List<Post> _allPosts = [];
+  late User _currentUser;
   late final PostRepository postRepository;
   bool _isLoading = true;
   bool _hasError = false;
@@ -33,21 +36,38 @@ class _FeedPageState extends State<FeedPage> {
 
   Future<void> _initialize() async {
     postRepository = PostRepository(token: widget.token);
+    final authRepository = AuthRepository();
+
     try {
+      // 1. Получаем текущего пользователя
+      final user = await authRepository.getCurrentUser(widget.token);
+
+      if (user == null) {
+        throw Exception('Не удалось получить данные пользователя');
+      }
+
+      setState(() {
+        _currentUser = user;
+      });
+
+      // 2. Загружаем посты
       final posts = await postRepository.getAllPosts();
+
+      // 3. Обновляем состояние
       setState(() {
         _allPosts = posts;
         _posts = posts;
         _isLoading = false;
       });
     } catch (e, st) {
-      talker.error('Ошибка при загрузке постов: $e', st);
+      talker.error('Ошибка при загрузке: $e', st);
       setState(() {
         _isLoading = false;
         _hasError = true;
       });
     }
   }
+
 
   void _onSearchChanged(String query) {
     final lowerQuery = query.toLowerCase();
@@ -98,9 +118,17 @@ class _FeedPageState extends State<FeedPage> {
         itemCount: _posts.length,
         itemBuilder: (context, index) => PostItem(
           item: _posts[index],
-          onLike: (postId) => postRepository.likePost(postId),
-
+          userId: _currentUser.id, // <== передаем сюда текущего юзера
+          onLike: (postId, userId) async {
+            final updatedPost = await postRepository.likePost(postId, userId);
+            setState(() {
+              // обновляем пост в списке
+              _posts[index] = updatedPost;
+            });
+            return updatedPost;
+          },
         ),
+
       ),
     );
   }

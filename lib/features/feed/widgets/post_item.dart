@@ -4,9 +4,17 @@ import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 class PostItem extends StatefulWidget {
-  const PostItem({super.key, required this.item, required this.onLike, this.onTapProfile});
+  const PostItem({
+    super.key,
+    required this.item,
+    required this.userId,
+    required this.onLike,
+    this.onTapProfile,
+  });
+
   final Post item;
-  final Function(String) onLike;
+  final String userId;
+  final Future<Post> Function(String postId, String userId) onLike;
   final VoidCallback? onTapProfile;
 
   @override
@@ -15,27 +23,26 @@ class PostItem extends StatefulWidget {
 
 class _PostItemState extends State<PostItem> {
   late int likes;
-  bool liked = false;
-
-  ///TEMP LOGIC
-  bool isSelected = false;
+  late bool liked;
 
   @override
   void initState() {
     super.initState();
     likes = widget.item.likes;
+    liked = widget.item.idsLiked.contains(widget.userId); // <-- проверяем лайкал ли юзер
   }
 
-  void _toggleLike() {
-    setState(() {
-      if (liked) {
-        likes--;
-      } else {
-        likes++;
-        widget.onLike(widget.item.id);
-      }
-      liked = !liked;
-    });
+  Future<void> _toggleLike() async {
+    try {
+      final updatedPost = await widget.onLike(widget.item.id, widget.userId);
+      setState(() {
+        likes = updatedPost.likes;
+        liked = updatedPost.idsLiked.contains(widget.userId);
+      });
+    } catch (e) {
+      // можно добавить snackbar/talker
+      debugPrint('Ошибка при лайке: $e');
+    }
   }
 
   @override
@@ -152,13 +159,7 @@ class _PostItemState extends State<PostItem> {
                               icon: Icons.chat_bubble_outline, label: '0'),
                           _PostAction(icon: Icons.sync, label: '0'),
                           // _PostAction(icon: Icons.visibility, label: '6'),
-                          IconButton(
-                            onPressed: () {
-                              // TODO: bookmark logic
-                            },
-                            icon: Icon(isSelected ? Icons.bookmark : Icons
-                                .bookmark_border),
-                          ),
+
                         ],
                       ),
                     ],

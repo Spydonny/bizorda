@@ -109,9 +109,13 @@ class PostRepository {
     }
   }
 
-  Future<Post> likePost(String postId) async {
+  Future<Post> likePost(String postId, String userId) async {
     final uri = Uri.parse('$baseUrl/company/posts/$postId/like');
-    final response = await http.post(uri, headers: _headers);
+    final response = await http.post(
+      uri,
+      headers: _headers,
+      body: jsonEncode({'user_id': userId}), // <== передаем user_id
+    );
 
     if (response.statusCode == 200) {
       return Post.fromJson(jsonDecode(response.body));

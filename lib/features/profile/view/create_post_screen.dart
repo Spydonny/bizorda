@@ -36,7 +36,11 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
   void createPost(BuildContext context) async {
     final content = contentController.text;
-    await postRepository.createPost(content, imageFile: selectedImage);
+    try {
+      await postRepository.createPost(content, imageFile: selectedImage);
+    } catch(e) {
+      rethrow;
+    }
     if (!context.mounted) return;
     context.go('/profile');
   }
