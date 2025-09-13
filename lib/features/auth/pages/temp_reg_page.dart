@@ -91,47 +91,79 @@ class _TempRegPageState extends State<TempRegPage> {
 
   Future<void> _handleSubmit(BuildContext context) async {
     if (_formKey.currentState!.validate()) {
-      // Пример доступа к значениям:
       talker.debug('ФИО: ${_fullNameController.text}');
       talker.debug('БИН/ИИН: ${_nationalIDController.text}');
       talker.debug('Пароль: ${_passwordController.text}');
       talker.debug('Подтверждение пароля: ${_confirmPasswordController.text}');
-      if (_passwordController.text != _confirmPasswordController.text) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Пароли не совпадают')));
+
+      // Проверка ИИН
+      if (_nationalIDController.text.trim().length != 12) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Формат ИИН некорректен')),
+        );
+        throw();
       }
+
+      // Проверка совпадения паролей
+      if (_passwordController.text != _confirmPasswordController.text) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Пароли не совпадают')),
+        );
+        throw();
+      }
+
+      // Проверка email
+      final email = _emailController.text.trim();
+      final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+      if (!emailRegex.hasMatch(email)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Некорректный email адрес')),
+        );
+        throw();
+      }
+
+      // Определение названия компании и типа регистрации
       final raw_name = _companyNameController.text.split(' ');
-      String companyName =  raw_name.sublist(1).join();
+      String companyName = raw_name.sublist(1).join();
       String typeReg = raw_name[0];
-      if(companyName == '') {
+      if (companyName == '') {
         companyName = raw_name[0];
         typeReg = '_';
       }
-      try {
 
+      try {
         final company = await companyRepo.createCompany(
-            name: companyName,
-            email: _emailController.text,
-            sphere: 'Не указан',
-            OKED: 'Не указан',
-            registrationType: typeReg
+          name: companyName,
+          email: email,
+          sphere: 'Не указан',
+          OKED: 'Не указан',
+          registrationType: typeReg,
         );
 
-        final user = authRepository.registerUser(companyId: company!.id,
-            fullname: _fullNameController.text, nationalId: _nationalIDController.text,
-            position: 'CEO', password: _passwordController.text);
-
-      } on FoundOtherException catch(e) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Вы уже зарегистрированы')));
+        await authRepository.registerUser(
+          companyId: company!.id,
+          fullname: _fullNameController.text,
+          nationalId: _nationalIDController.text,
+          position: 'CEO',
+          password: _passwordController.text,
+        );
+      } on FoundOtherException catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Вы уже зарегистрированы')),
+        );
         talker.error(e);
-        return;
-
-      } catch(e) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Непредвиденная ошибка')));
+        rethrow;
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Непредвиденная ошибка')),
+        );
         talker.error(e);
         rethrow;
       }
+
       await Future.delayed(const Duration(milliseconds: 500));
       context.go('/login');
     }
   }
+
 }
