@@ -53,6 +53,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final w = MediaQuery.sizeOf(context).width;
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -117,30 +119,42 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               ],
 
               // Кнопки
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: pickImage,
-                      icon: const Icon(Icons.image, color: Colors.white70),
-                      label: const Text(
-                        'Загрузить фото',
-                        style: TextStyle(color: Colors.white70),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Colors.white24),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+              SizedBox(
+                width: 300,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: SizedBox(
+                        height: 45,
+                        child: OutlinedButton.icon(
+                          onPressed: pickImage,
+                          icon: const Icon(Icons.image, color: Colors.white70),
+                          label: const Text(
+                            'Загрузить фото',
+                            style: TextStyle(color: Colors.white70),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            padding: EdgeInsets.zero, // убираем лишний padding
+                            side: const BorderSide(color: Colors.white24),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  SubmitButton(
-                    onPressed: () => createPost(context),
-                  )
-                ],
-              ),
+                    const SizedBox(width: 12),
+                    SizedBox(
+                      height: 45,
+                      child: SubmitButton(
+                        onPressed: () => createPost(context),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+
+
             ],
           ),
         ),

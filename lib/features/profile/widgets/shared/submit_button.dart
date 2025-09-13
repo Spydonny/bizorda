@@ -32,7 +32,6 @@ class _SubmitButtonState extends State<SubmitButton> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: double.infinity,
       height: 45,
       child: ElevatedButton(
         onPressed: _isDisabled ? null : _handlePress,
