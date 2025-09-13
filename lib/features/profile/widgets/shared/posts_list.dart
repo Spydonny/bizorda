@@ -83,7 +83,7 @@ class _PostCard extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: Image.network(
-                post.image!,
+                'https://enterra-api-production.up.railway.app${post.image!}',
                 height: 180,
                 width: double.infinity,
                 fit: BoxFit.cover,

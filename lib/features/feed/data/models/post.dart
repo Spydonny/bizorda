@@ -33,7 +33,7 @@ class Post {
     companyName: json['company_name'],
     timestamp: DateTime.parse(json['timestamp']),
     likes: json['likes'],
-    idsLiked: json['ids_liked']
+    idsLiked: (json['ids_liked'] as List<dynamic>?)?.map((e) => e as String).toList() ?? [],
   );
 
   Map<String, dynamic> toJson() {

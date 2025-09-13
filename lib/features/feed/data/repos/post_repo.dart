@@ -2,8 +2,10 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 import 'package:mime/mime.dart';
 import 'package:http_parser/http_parser.dart';
+import 'package:flutter/foundation.dart'; // для kIsWeb
 
 import '../models/post.dart';
 
@@ -17,7 +19,7 @@ class PostRepository {
     HttpHeaders.authorizationHeader: 'Bearer $token',
   };
 
-  Future<Post> createPost(String content, {File? imageFile}) async {
+  Future<Post> createPost(String content, {XFile? imageFile}) async {
     final uri = Uri.parse('$baseUrl/company/posts/');
     final request = http.MultipartRequest('POST', uri)
       ..headers.addAll(_headers)
@@ -25,26 +27,41 @@ class PostRepository {
 
     if (imageFile != null) {
       final mimeType = lookupMimeType(imageFile.path) ?? 'image/png';
-      final fileStream = http.ByteStream(imageFile.openRead());
-      final fileLength = await imageFile.length();
-      final multipartFile = http.MultipartFile(
-        'image',
-        fileStream,
-        fileLength,
-        filename: imageFile.path.split('/').last,
-        contentType: MediaType.parse(mimeType),
-      );
-      request.files.add(multipartFile);
+      final mediaType = MediaType.parse(mimeType);
+
+      if (kIsWeb) {
+        // 🔹 Web: берем bytes напрямую
+        final bytes = await imageFile.readAsBytes();
+        final multipartFile = http.MultipartFile.fromBytes(
+          'image',
+          bytes,
+          filename: imageFile.name,
+          contentType: mediaType,
+        );
+        request.files.add(multipartFile);
+      } else {
+        // 🔹 Android/iOS/desktop: через stream
+        final fileStream = http.ByteStream(imageFile.openRead());
+        final fileLength = await imageFile.length();
+        final multipartFile = http.MultipartFile(
+          'image',
+          fileStream,
+          fileLength,
+          filename: imageFile.path.split('/').last,
+          contentType: mediaType,
+        );
+        request.files.add(multipartFile);
+      }
     }
 
-    final streamedResponse = await request.send();
-    final response = await http.Response.fromStream(streamedResponse);
+    final response = await request.send();
 
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      return Post.fromJson(jsonDecode(response.body));
-    } else {
-      throw Exception('Failed to create post: ${response.body}');
+    if (response.statusCode != 200) {
+      throw Exception('Ошибка загрузки: ${response.statusCode}');
     }
+
+    final responseData = await response.stream.bytesToString();
+    return Post.fromJson(jsonDecode(responseData));
   }
 
   Future<List<Post>> getAllPosts() async {
@@ -110,11 +127,14 @@ class PostRepository {
   }
 
   Future<Post> likePost(String postId, String userId) async {
-    final uri = Uri.parse('$baseUrl/company/posts/$postId/like');
+    // Формируем URI с query-параметром
+    final uri = Uri.parse('$baseUrl/company/posts/$postId/like')
+        .replace(queryParameters: {'user_id': userId});
+
     final response = await http.post(
       uri,
       headers: _headers,
-      body: jsonEncode({'user_id': userId}), // <== передаем user_id
+      // body больше не нужен, т.к. данные передаем в query
     );
 
     if (response.statusCode == 200) {

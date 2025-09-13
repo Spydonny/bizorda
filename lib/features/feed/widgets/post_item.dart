@@ -28,6 +28,7 @@ class _PostItemState extends State<PostItem> {
   @override
   void initState() {
     super.initState();
+    print(widget.item.image);
     likes = widget.item.likes;
     liked = widget.item.idsLiked.contains(widget.userId); // <-- проверяем лайкал ли юзер
   }
@@ -132,7 +133,7 @@ class _PostItemState extends State<PostItem> {
                         ClipRRect(
                           borderRadius: BorderRadius.circular(8),
                           child: Image.network(
-                            "https://enterra-api.onrender.com${widget.item
+                            "https://enterra-api-production.up.railway.app${widget.item
                                 .image!}",
                             width: double.infinity,
                             fit: BoxFit.cover,

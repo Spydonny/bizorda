@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../widgets/shared/profile_text_field.dart';
 import '../widgets/shared/submit_button.dart';
+import 'package:flutter/foundation.dart'; // для kIsWeb
 
 class CreatePostScreen extends StatefulWidget {
   const CreatePostScreen({super.key, required this.token});
@@ -20,16 +21,14 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   late final PostRepository postRepository;
 
   final TextEditingController contentController = TextEditingController();
-  File? selectedImage;
+  XFile? selectedImage;
 
   Future<void> pickImage() async {
     final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-
-
-    if (pickedFile != null) {
+    final file = await picker.pickImage(source: ImageSource.gallery);
+    if (file != null) {
       setState(() {
-        selectedImage = File(pickedFile.path);
+        selectedImage = file;
       });
     }
   }
@@ -37,14 +36,13 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   void createPost(BuildContext context) async {
     final content = contentController.text;
     try {
-      await postRepository.createPost(content, imageFile: selectedImage);
-    } catch(e) {
+      final post = await postRepository.createPost(content, imageFile: selectedImage);
+    } catch (e) {
+      debugPrint("Ошибка при создании поста: $e");
       rethrow;
     }
-    if (!context.mounted) return;
     context.go('/profile');
   }
-
   @override
   void initState() {
     postRepository = PostRepository(token: widget.token);
@@ -108,12 +106,20 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               if (selectedImage != null) ...[
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
-                  child: Image.file(
-                    selectedImage!,
-                    height: 160,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  ),
+                  child: kIsWeb ?
+                  Image.network(
+                  selectedImage!.path,
+                  height: 160,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  )
+                  :
+                  Image.file(
+                    File(selectedImage!.path),
+                  height: 160,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  )
                 ),
                 const SizedBox(height: 12),
               ],
