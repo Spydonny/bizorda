@@ -4,7 +4,7 @@ import '../models/message.dart';
 import '../models/message_room.dart';
 
 class MessagesRepo {
-  final String baseUrl = 'https://enterra-api-production.up.railway.app/messages';
+  final String baseUrl = 'https://enterra-api.onrender.com/messages';
   final String token;
 
   MessagesRepo({required this.token});

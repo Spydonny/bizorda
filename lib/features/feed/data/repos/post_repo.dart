@@ -10,7 +10,7 @@ import 'package:flutter/foundation.dart'; // для kIsWeb
 import '../models/post.dart';
 
 class PostRepository {
-  final String baseUrl = 'https://enterra-api-production.up.railway.app';
+  final String baseUrl = 'https://enterra-api.onrender.com';
   final String token;
 
   PostRepository({ required this.token});
